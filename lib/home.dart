@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
@@ -731,44 +732,62 @@ class _ReplyFabState extends State<_ReplyFab>
         final tooltip = onMailView ? 'Reply' : 'Compose';
 
         // TODO: Add Container Transform from FAB to compose email page (Motion)
-        return Material(
-          color: theme.colorScheme.secondary,
-          shape: circleFabBorder,
-          child: Tooltip(
-            message: tooltip,
-            child: InkWell(
-              customBorder: circleFabBorder,
-              onTap: () {
-                Provider.of<EmailStore>(
-                  context,
-                  listen: false,
-                ).onCompose = true;
+        return OpenContainer(
+          openColor: theme.cardColor,
+          onClosed: (success) {
+            Provider.of<EmailStore>(
+              context,
+              listen: false,
+            ).onCompose = false;
+          },
+          closedShape: circleFabBorder,
+          closedColor: theme.colorScheme.secondary,
+          closedElevation: 6,
+          openBuilder: (context, action) {
+            return const ComposePage();
+          },
+          closedBuilder: (context, openContainer) {
+            return Tooltip(
+              message: tooltip,
+              child: InkWell(
+                customBorder: circleFabBorder,
+                onTap: () {
+                  Provider.of<EmailStore>(
+                    context,
+                    listen: false,
+                  ).onCompose = true;
 
-                Navigator.of(context).push(
-                  PageRouteBuilder(
-                    pageBuilder: (
-                      BuildContext context,
-                      Animation<double> animation,
-                      Animation<double> secondaryAnimation,
-                    ) {
-                      return const ComposePage();
-                    },
+                  openContainer();
+                },
+                child: SizedBox(
+                  height: _mobileFabDimension,
+                  width: _mobileFabDimension,
+                  child: Center(
+                    child: fabSwitcher,
                   ),
-                );
-              },
-              child: SizedBox(
-                height: _mobileFabDimension,
-                width: _mobileFabDimension,
-                child: Center(
-                  child: fabSwitcher,
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
   }
 }
 
-// TODO: Add Fade through transition between compose and reply FAB (Motion)
+// // TODO: Add Fade through transition between compose and reply FAB (Motion)
+// class _OpenContainerWrapper extends StatelessWidget {
+//   const _OpenContainerWrapper({required this.closedContainer});
+
+//   final Widget closedContainer;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return OpenContainer(
+//       closedBuilder: (context, openContainer) {},
+//       openBuilder: (context, action) {
+//         return ComposePage();
+//       },
+//     );
+//   }
+// }
