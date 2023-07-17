@@ -708,7 +708,7 @@ class _ReplyFab extends StatefulWidget {
 
 class _ReplyFabState extends State<_ReplyFab>
     with SingleTickerProviderStateMixin {
-  // TODO: Add Fade through transition between compose and reply FAB (Motion)
+  static final fabKey = UniqueKey();
   static const double _mobileFabDimension = 56;
 
   @override
@@ -719,19 +719,21 @@ class _ReplyFabState extends State<_ReplyFab>
     return Selector<EmailStore, bool>(
       selector: (context, emailStore) => emailStore.onMailView,
       builder: (context, onMailView, child) {
-        // TODO: Add Fade through transition between compose and reply FAB (Motion)
-        final fabSwitcher = onMailView
-            ? const Icon(
-                Icons.reply_all,
-                color: Colors.black,
-              )
-            : const Icon(
-                Icons.create,
-                color: Colors.black,
-              );
+        final fabSwitcher = _FadeThroughTransitionSwitcher(
+          fillColor: Colors.transparent,
+          child: onMailView
+              ? Icon(
+                  Icons.reply_all,
+                  key: fabKey,
+                  color: Colors.black,
+                )
+              : const Icon(
+                  Icons.create,
+                  color: Colors.black,
+                ),
+        );
         final tooltip = onMailView ? 'Reply' : 'Compose';
 
-        // TODO: Add Container Transform from FAB to compose email page (Motion)
         return OpenContainer(
           openColor: theme.cardColor,
           onClosed: (success) {
@@ -775,19 +777,25 @@ class _ReplyFabState extends State<_ReplyFab>
   }
 }
 
-// // TODO: Add Fade through transition between compose and reply FAB (Motion)
-// class _OpenContainerWrapper extends StatelessWidget {
-//   const _OpenContainerWrapper({required this.closedContainer});
+class _FadeThroughTransitionSwitcher extends StatelessWidget {
+  const _FadeThroughTransitionSwitcher(
+      {required this.fillColor, required this.child});
 
-//   final Widget closedContainer;
+  final Widget child;
+  final Color fillColor;
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return OpenContainer(
-//       closedBuilder: (context, openContainer) {},
-//       openBuilder: (context, action) {
-//         return ComposePage();
-//       },
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return PageTransitionSwitcher(
+      transitionBuilder: (child, animation, secondaryAnimation) {
+        return FadeThroughTransition(
+          animation: animation,
+          secondaryAnimation: secondaryAnimation,
+          fillColor: fillColor,
+          child: child,
+        );
+      },
+      child: child,
+    );
+  }
+}
